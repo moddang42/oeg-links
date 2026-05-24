@@ -121,6 +121,8 @@ export const ADMIN_HTML = String.raw`<!doctype html>
   }
   .copy-btn:hover { background: var(--orange-soft); color: var(--navy) }
   .copy-btn.copied { color: var(--success); font-weight: 600 }
+  .copy-btn-line { color: #06C755; font-weight: 600 }
+  .copy-btn-line:hover { background: #E5F8EE; color: #06C755 }
 
   .target {
     color: var(--muted); font-size: 13px;
@@ -328,6 +330,7 @@ function esc(s) {
 }
 
 function shortUrl(code) { return ORIGIN + '/' + code }
+function lineUrl(code) { return shortUrl(code) + '?openExternalBrowser=1' }
 
 function fmtDateTime(iso) {
   if (!iso) return '—';
@@ -445,7 +448,8 @@ function renderList() {
           '<div class="link-title">' + esc(l.title || l.code) + '</div>' +
           '<div class="link-code-row">' +
             '<span class="link-code">/' + esc(l.code) + '</span>' +
-            '<button class="copy-btn" onclick="copyShort(\'' + esc(l.code) + '\', this)">คัดลอก</button>' +
+            '<button class="copy-btn" onclick="copyShort(\'' + esc(l.code) + '\', this)" title="คัดลอก URL ปกติ">คัดลอก</button>' +
+            '<button class="copy-btn copy-btn-line" onclick="copyLine(\'' + esc(l.code) + '\', this)" title="คัดลอกสำหรับ LINE — บังคับเปิดในเบราว์เซอร์ภายนอก">LINE</button>' +
           '</div>' +
         '</td>' +
         '<td data-label="ปลายทาง"><a class="target" href="' + esc(l.target_url) + '" target="_blank" rel="noopener" title="' + esc(l.target_url) + '">' + esc(l.target_url) + '</a></td>' +
@@ -483,6 +487,18 @@ window.copyShort = async (code, btn) => {
     await navigator.clipboard.writeText(shortUrl(code));
     const orig = btn.textContent;
     btn.textContent = '✓ คัดลอก!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
+  } catch {
+    toast('คัดลอกไม่ได้ ลองใหม่', 'error');
+  }
+};
+
+window.copyLine = async (code, btn) => {
+  try {
+    await navigator.clipboard.writeText(lineUrl(code));
+    const orig = btn.textContent;
+    btn.textContent = '✓ LINE!';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1500);
   } catch {
