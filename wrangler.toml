@@ -1,0 +1,18 @@
+name = "oeg-links"
+main = "src/index.js"
+compatibility_date = "2025-05-01"
+workers_dev = true
+
+# D1 database binding.
+# database_id is filled in after running `wrangler d1 create oeg_links`.
+[[d1_databases]]
+binding = "DB"
+database_name = "oeg_links"
+database_id = "632b23d2-896d-4697-b25e-32e218091f81"
+migrations_dir = "migrations"
+
+[observability]
+enabled = true
+
+# Public asset / KV bindings are intentionally omitted — the admin SPA is
+# inlined in src/admin.js and served from the Worker itself.

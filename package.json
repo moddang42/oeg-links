@@ -1,0 +1,17 @@
+{
+  "name": "oeg-links",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OEG internal short-link manager on Cloudflare Workers + D1",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 migrations apply oeg_links --local",
+    "db:migrate:remote": "wrangler d1 migrations apply oeg_links --remote",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
