@@ -625,14 +625,13 @@ function openLinkForm(link) {
     '</div>'
   );
 
-  $('#btn-save').addEventListener('click', () => submitLinkForm(isEdit));
+  $('#btn-save').addEventListener('click', () => submitLinkForm(isEdit, link && link.code));
 }
 
-async function submitLinkForm(isEdit) {
+async function submitLinkForm(isEdit, editingCode) {
   const form = $('#link-form');
   const fd = new FormData(form);
   const body = {
-    code: (fd.get('code') || '').toString().trim().toLowerCase(),
     target_url: (fd.get('target_url') || '').toString().trim(),
     title: (fd.get('title') || '').toString().trim(),
     category: (fd.get('category') || '').toString().trim(),
@@ -643,10 +642,17 @@ async function submitLinkForm(isEdit) {
   $('#err-code').textContent = '';
   $('#err-url').textContent = '';
 
-  if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(body.code)) {
-    $('#err-code').textContent = 'รูปแบบ code ไม่ถูกต้อง (a-z, 0-9, ขีดกลาง)';
-    return;
+  let code;
+  if (isEdit) {
+    code = editingCode;
+  } else {
+    code = (fd.get('code') || '').toString().trim().toLowerCase();
+    if (!/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(code)) {
+      $('#err-code').textContent = 'รูปแบบ code ไม่ถูกต้อง (a-z, 0-9, ขีดกลาง)';
+      return;
+    }
   }
+
   try { new URL(body.target_url) } catch {
     $('#err-url').textContent = 'URL ไม่ถูกต้อง';
     return;
@@ -656,11 +662,10 @@ async function submitLinkForm(isEdit) {
   btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
   try {
     if (isEdit) {
-      const { code, ...rest } = body;
-      await api('PUT', '/links/' + encodeURIComponent(code), rest);
+      await api('PUT', '/links/' + encodeURIComponent(code), body);
       toast('บันทึกแล้ว');
     } else {
-      await api('POST', '/links', body);
+      await api('POST', '/links', { code, ...body });
       toast('สร้างลิงก์แล้ว');
     }
     closeModal();
