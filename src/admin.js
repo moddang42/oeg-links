@@ -97,11 +97,21 @@ export const ADMIN_HTML = String.raw`<!doctype html>
     background: var(--surface); border-radius: var(--radius);
     box-shadow: var(--shadow); overflow: hidden;
   }
-  table.links { width: 100%; border-collapse: collapse }
+  table.links { width: 100%; border-collapse: collapse; table-layout: fixed }
   table.links th, table.links td {
     text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--line);
     vertical-align: middle;
+    overflow: hidden;
   }
+  table.links th:nth-child(1) { width: 22% }   /* ลิงก์ */
+  table.links th:nth-child(2) { width: 26% }   /* ปลายทาง */
+  table.links th:nth-child(3) { width: 10% }   /* หมวด */
+  table.links th:nth-child(4) { width: 7%  }   /* คลิกรวม */
+  table.links th:nth-child(5) { width: 7%  }   /* 30 วัน */
+  table.links th:nth-child(6) { width: 11% }   /* คลิกล่าสุด */
+  table.links th:nth-child(7) { width: 7%  }   /* สถานะ */
+  table.links th:nth-child(8) { width: 10%; min-width: 130px }  /* actions */
+
   table.links th {
     font-size: 11px; text-transform: uppercase; letter-spacing: .08em;
     color: var(--muted); font-weight: 600; background: #FAFBFC;
@@ -109,15 +119,23 @@ export const ADMIN_HTML = String.raw`<!doctype html>
   table.links tr:last-child td { border-bottom: none }
   table.links tr:hover td { background: #FAFBFC }
 
-  .link-title { font-weight: 600; color: var(--navy) }
-  .link-code-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12px }
+  .link-title {
+    font-weight: 600; color: var(--navy);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .link-code-row {
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+    font-size: 12px; flex-wrap: wrap;
+  }
   .link-code {
     font-family: ui-monospace, 'SF Mono', Menlo, monospace;
     color: var(--muted); background: #F0F2F5; padding: 2px 7px; border-radius: 4px;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .copy-btn {
     border: none; background: transparent; cursor: pointer; color: var(--muted);
     padding: 2px 6px; border-radius: 4px; font-size: 11px;
+    white-space: nowrap; flex-shrink: 0;
   }
   .copy-btn:hover { background: var(--orange-soft); color: var(--navy) }
   .copy-btn.copied { color: var(--success); font-weight: 600 }
@@ -125,8 +143,9 @@ export const ADMIN_HTML = String.raw`<!doctype html>
   .copy-btn-line:hover { background: #E5F8EE; color: #06C755 }
 
   .target {
-    color: var(--muted); font-size: 13px;
-    max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    display: block; color: var(--muted); font-size: 13px;
+    max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .num { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--navy) }
   .num.zero { color: var(--muted); font-weight: 400 }
@@ -249,10 +268,13 @@ export const ADMIN_HTML = String.raw`<!doctype html>
     .row-2 { grid-template-columns: 1fr }
 
     /* Convert table to cards */
+    table.links { table-layout: auto }
     table.links thead { display: none }
     table.links tr {
       display: block; padding: 16px; border-bottom: 1px solid var(--line);
     }
+    table.links tr:hover td { background: transparent }
+    table.links th, table.links td { width: auto; overflow: visible }
     table.links td {
       display: flex; justify-content: space-between; align-items: flex-start;
       padding: 6px 0; border: none; gap: 12px;
@@ -260,18 +282,42 @@ export const ADMIN_HTML = String.raw`<!doctype html>
     table.links td::before {
       content: attr(data-label); font-size: 11px; text-transform: uppercase;
       letter-spacing: .05em; color: var(--muted); font-weight: 600;
-      flex-shrink: 0; padding-top: 2px;
+      flex-shrink: 0; padding-top: 2px; min-width: 80px;
     }
+    table.links td:first-child { display: block; padding-bottom: 10px }
     table.links td:first-child::before { display: none }
-    table.links td.actions { justify-content: flex-end; padding-top: 12px }
-    .target { max-width: 60% }
+    table.links td.actions {
+      justify-content: flex-end; padding-top: 12px; flex-wrap: wrap;
+    }
+    table.links td.actions::before { display: none }
+
+    /* Title: wrap freely on mobile (was single-line ellipsis on desktop) */
+    .link-title { white-space: normal; overflow: visible; }
+
+    /* Long URLs: break wherever they need to */
+    .target {
+      white-space: normal; word-break: break-all;
+      text-align: right; max-width: 70%;
+    }
+
+    /* Bigger touch targets */
+    .icon-btn { padding: 10px 12px; font-size: 16px }
+    .copy-btn { padding: 4px 10px; font-size: 12px }
   }
 
   @media (max-width: 540px) {
     header.app-header { padding: 14px 16px }
     .brand h1 { font-size: 18px }
     .brand .sub { display: none }
-    main { padding: 16px }
+    main { padding: 12px }
+    .toolbar { grid-template-columns: 1fr; padding: 12px }
+    .toolbar .btn-primary { grid-column: auto }
+    .modal { border-radius: 12px 12px 0 0; max-height: 95vh }
+    .modal-back { padding: 0; align-items: flex-end }
+    .modal-head { padding: 16px 18px }
+    .modal-body { padding: 16px 18px }
+    .modal-foot { padding: 12px 18px }
+    .stat .value { font-size: 22px }
   }
 </style>
 </head>
